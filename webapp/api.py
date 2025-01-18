@@ -56,7 +56,10 @@ with tab2:
     feedback_image = st.file_uploader("Upload an image for feedback", type=["png", "jpg", "jpeg"], key="feedback")
 
     # Input for true label
-    true_label = st.text_input("Enter the correct label:")
+    true_label = st.text_input("Enter the correct label (a-z, 'nothing', or 'stop'):")
+
+    # List of valid labels
+    valid_labels = [chr(i) for i in range(ord('a'), ord('z') + 1)] + ["nothing", "stop"]
 
     if feedback_image:
         # Display uploaded image
@@ -65,20 +68,24 @@ with tab2:
 
         # Send feedback button
         if st.button("Send Feedback") and true_label:
-            # Convert image to bytes
-            image_bytes = io.BytesIO()
-            image.save(image_bytes, format="PNG")
-            image_bytes = image_bytes.getvalue()
+            # Validate the true_label input
+            if true_label.lower() not in valid_labels:
+                st.error("Invalid label! Please enter a letter (a-z), 'nothing', or 'stop'.")
+            else:
+                # Convert image to bytes
+                image_bytes = io.BytesIO()
+                image.save(image_bytes, format="PNG")
+                image_bytes = image_bytes.getvalue()
 
-            # Send feedback to the API
-            try:
-                response = requests.post(
-                    FEEDBACK_API_URL_DEV, 
-                    files={"image": ("image.png", image_bytes, "image/png")},
-                    data={"target": true_label}
-                )
-                response.raise_for_status()
-                st.success("Feedback submitted successfully!")
+                # Send feedback to the API
+                try:
+                    response = requests.post(
+                        FEEDBACK_API_URL_DEV, 
+                        files={"image": ("image.png", image_bytes, "image/png")},
+                        data={"target": true_label.lower()}  # Ensure the label is lowercase
+                    )
+                    response.raise_for_status()
+                    st.success("Feedback submitted successfully!")
 
-            except requests.exceptions.RequestException as e:
-                st.error(f"Error submitting feedback: {e}")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Error submitting feedback: {e}")
