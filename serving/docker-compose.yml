@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   serving-api:
     container_name: serving-api

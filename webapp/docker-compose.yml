@@ -1,5 +1,3 @@
-# version: '3.8'
-
 # Définition du réseau
 networks:
   serving_prod_net:

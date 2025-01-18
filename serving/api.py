@@ -26,13 +26,13 @@ app = FastAPI()
 resnet_model = ResNet50(weights="imagenet", include_top=False, pooling="avg")
 
 # Load the scaler, PCA, and ML model
-with open("/artifacts/scaler.pkl", "rb") as scaler_file:
+with open("../artifacts/scaler.pkl", "rb") as scaler_file:
     scaler = pickle.load(scaler_file)
 
-with open("/artifacts/pca.pkl", "rb") as pca_file:
+with open("../artifacts/pca.pkl", "rb") as pca_file:
     pca = pickle.load(pca_file)
 
-with open("/artifacts/model_xgb.pkl", "rb") as model_file:
+with open("../artifacts/model_xgb.pkl", "rb") as model_file:
     model = pickle.load(model_file)
 
 @app.post("/predict")
@@ -62,8 +62,11 @@ async def predict(image: UploadFile = File(...)):
         # Make prediction using the ML model
         prediction = model.predict(features_pca)
       
+        prediction = prediction.tolist()[0]
 
-        return JSONResponse(content={"prediction": prediction.tolist()[0]})
+        prediction = index_to_label[prediction]
+
+        return JSONResponse(content={"prediction": prediction})
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
