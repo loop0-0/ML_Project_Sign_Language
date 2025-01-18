@@ -3,45 +3,82 @@ import requests
 from PIL import Image
 import io
 
-# Define development API URL
+# Define development API URLs
 PREDICTION_API_URL_DEV = "http://localhost:8000/predict"
+FEEDBACK_API_URL_DEV = "http://localhost:8000/feedback"
 
 # Streamlit app
 st.title("Sign Language AI Interpreter")
 
-# Upload image
-uploaded_file = st.file_uploader("Upload a sign language image to interpret", type=["png", "jpg", "jpeg"])
+# Create tabs
+tab1, tab2 = st.tabs(["Prediction", "Feedback"])
 
-if uploaded_file:
-    # Display uploaded image
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Here is the uploaded image", use_container_width=True)
+# Tab 1: Prediction
+with tab1:
+    st.header("Prediction")
 
-    # Predict button
-    if st.button("Predict"):
-        # Convert image to bytes
-        image_bytes = io.BytesIO()
-        image.save(image_bytes, format="PNG")
-        image_bytes = image_bytes.getvalue()
+    # Upload image
+    uploaded_file = st.file_uploader("Upload a sign language image to interpret", type=["png", "jpg", "jpeg"])
 
-        # Send image to prediction API (using localhost dev URL)
-        try:
-            response = requests.post(
-                PREDICTION_API_URL_DEV, 
-                files={"image": ("image.png", image_bytes, "image/png")}
-            )
-            response.raise_for_status()
-            data = response.json()
+    if uploaded_file:
+        # Display uploaded image
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Here is the uploaded image", use_container_width=True)
 
-            # Extract prediction and display results
-            prediction = data.get("prediction", "Unknown")
-            st.success(f"Predicted Letter: {prediction}")
-            
-            # Display the processed image (if available from API)
-            processed_image_data = data.get("processed_image")
-            if processed_image_data:
-                processed_image = Image.open(io.BytesIO(bytes(processed_image_data)))
-                st.image(processed_image, caption="Processed Image", use_container_width=True)
+        # Predict button
+        if st.button("Predict", key="predict"):
+            # Convert image to bytes
+            image_bytes = io.BytesIO()
+            image.save(image_bytes, format="PNG")
+            image_bytes = image_bytes.getvalue()
 
-        except requests.exceptions.RequestException as e:
-            st.error(f"Error: {e}")
+            # Send image to prediction API
+            try:
+                response = requests.post(
+                    PREDICTION_API_URL_DEV, 
+                    files={"image": ("image.png", image_bytes, "image/png")}
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                # Extract prediction and display results
+                prediction = data.get("prediction", "Unknown")
+                st.success(f"Predicted Letter: {prediction}")
+
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error: {e}")
+
+# Tab 2: Feedback
+with tab2:
+    st.header("Feedback")
+
+    # Upload image for feedback
+    feedback_image = st.file_uploader("Upload an image for feedback", type=["png", "jpg", "jpeg"], key="feedback")
+
+    # Input for true label
+    true_label = st.text_input("Enter the correct label:")
+
+    if feedback_image:
+        # Display uploaded image
+        image = Image.open(feedback_image)
+        st.image(image, caption="Here is the uploaded image for feedback", use_container_width=True)
+
+        # Send feedback button
+        if st.button("Send Feedback") and true_label:
+            # Convert image to bytes
+            image_bytes = io.BytesIO()
+            image.save(image_bytes, format="PNG")
+            image_bytes = image_bytes.getvalue()
+
+            # Send feedback to the API
+            try:
+                response = requests.post(
+                    FEEDBACK_API_URL_DEV, 
+                    files={"image": ("image.png", image_bytes, "image/png")},
+                    data={"target": true_label}
+                )
+                response.raise_for_status()
+                st.success("Feedback submitted successfully!")
+
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error submitting feedback: {e}")
