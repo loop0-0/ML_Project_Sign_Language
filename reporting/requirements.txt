@@ -1,0 +1,5 @@
+# reporting/requirements.txt
+pandas
+numpy
+scikit-learn
+# DO NOT PIN evidently here, we install it from GitHub below
