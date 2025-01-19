@@ -1,7 +1,8 @@
-# Définition du réseau
+version: '3.8'
+
 networks:
   serving_prod_net:
-    external: true # Utilise le réseau créé par l'API
+    external: true
 
 services:
   webapp:
@@ -10,8 +11,6 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8081" # Expose le port 8081 de l'interface web
-    # depends_on:
-    #   - serving-api  # Démarre l'API avant l'interface web
+      - "8081:8081"
     networks:
-      - serving_prod_net # Connecte ce service au réseau de l'API
+      - serving_prod_net

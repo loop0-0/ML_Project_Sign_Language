@@ -4,9 +4,8 @@ from PIL import Image
 import io
 
 # Define development API URLs
-PREDICTION_API_URL_DEV = "http://localhost:8000/predict"
-FEEDBACK_API_URL_DEV = "http://localhost:8000/feedback"
-
+PREDICTION_API_URL_DEV = "http://serving-api:8080/predict"
+FEEDBACK_API_URL_DEV = "http://serving-api:8080/feedback"
 # Streamlit app
 st.title("Sign Language AI Interpreter")
 

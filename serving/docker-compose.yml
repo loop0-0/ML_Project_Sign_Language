@@ -1,19 +1,19 @@
+version: '3.8'
+
+networks:
+  prod_net:
+    driver: bridge
+
 services:
   serving-api:
     container_name: serving-api
     build:
-      context: . #sur le meme dossier on trouve le Dockerfile
+      context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080" # Expose le port 8080 de l'API
     volumes:
-      - ../data:/data # Partage le dossier data avec le conteneur
-      - ../artifacts:/artifacts  # Partage le dossier artifacts avec le conteneur
-      - .:/app  # Monte le dossier courant dans /app
+      - ../data:/data
+      - ../artifacts:/artifacts
+    ports:
+      - "8080:8080"
     networks:
-      - prod_net # Connecte ce service au réseau prod_net
-
-# Définition du réseau
-networks:
-  prod_net:
-    driver: bridge
+      - prod_net
