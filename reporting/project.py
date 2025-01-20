@@ -1,13 +1,14 @@
-import subprocess
-import time  
+
 import pandas as pd
 from evidently import ColumnMapping
 from evidently.report import Report
 from evidently.metric_preset import DataDriftPreset, ClassificationPreset
 
-
-REF_DATA_PATH = "/data/ref_data.csv"
-PROD_DATA_PATH = "/data/prod_data.csv"
+# for locel  use :
+#REF_DATA_PATH = "./data/ref_data.csv"
+#PROD_DATA_PATH = "./data/prod_data.csv"
+REF_DATA_PATH = "./data/ref_data.csv"
+PROD_DATA_PATH = "./data/prod_data.csv"
 
 
 def debug_label_types(df: pd.DataFrame, name: str):
@@ -111,12 +112,6 @@ def main():
 
     # Call the main function to generate the report
     build_static_report()
-    print("[INFO] Application is running. Access the report at http://localhost:8082")
-
-
-if __name__ == "__main__":
-    main()
-
-
+    
 if __name__ == "__main__":
     main()
