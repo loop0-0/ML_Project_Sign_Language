@@ -17,10 +17,5 @@ COPY project.py .
 # Exposer le port pour l'interface web d'Evidently
 EXPOSE 8082
 
-# Commande à lancer lors du démarrage du conteneur :
-# Exécution du script Python puis lancement de l'interface web
-CMD python project.py && \
-    evidently ui \
-        --workspace ./reporting/evidently_ui_workspace \
-        --host 0.0.0.0 \
-        --port 8082
+# Commande pour exécuter le projet et lancer l'interface web
+CMD python project.py && evidently ui --host 0.0.0.0 --port 8082
