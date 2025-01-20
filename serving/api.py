@@ -6,6 +6,12 @@ import cv2
 import csv
 import os
 import sys
+import warnings
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Only show errors
+
+warnings.filterwarnings("ignore", module="sklearn")
+warnings.filterwarnings("ignore", module="xgboost")
 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -135,25 +141,26 @@ async def feedback(image: UploadFile = File(...), target: str = Form(...)):
         np_image = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
 
-        # Preprocess the image for ResNet50
-        img_resized = cv2.resize(img, (224, 224))  # ResNet50 expects 224x224 images
-        img_array = np.expand_dims(img_resized, axis=0)
-        img_preprocessed = preprocess_input(img_array)  # Preprocessing for ResNet50
+
 
         # Extract features using ResNet50
-        features = resnet_model.predict(img_preprocessed)
-
-        # Apply scaler and PCA to the features
-        features_scaled = scaler.transform(features)
-        features_pca = pca.transform(features_scaled)
+        features_pca = transform_single_image(
+            image=img,
+            base_model=base_model,
+            scaler=scaler,
+            pca=pca,
+            target_size=(64, 64)
+        )
 
         # Make prediction using the ML model
         prediction = model.predict(features_pca)
         prediction = prediction.tolist()[0]
         prediction_label = index_to_label[prediction]
 
+        target_class = classes.index(target.upper() if len(target) == 1 else target.lower())
+
         # Convert PCA-transformed features to a list for CSV
-        pca_features = features_pca[0].tolist()
+        pca_features = features_pca
 
         print(f"target: {target}")
         print(f"predicted: {prediction_label}")
@@ -167,13 +174,13 @@ async def feedback(image: UploadFile = File(...), target: str = Form(...)):
 
             # Write header if the file doesn't exist
             if not file_exists:
-                header = [f"PCA_{i+1}" for i in range(len(pca_features))] + ["target", "prediction"]
+                header = [f"PCA_{i+1}" for i in range(pca_features.shape[1])] + ["target", "prediction"]
                 writer.writerow(header)
 
             # Append the data row (PCA features + target + prediction)
-            target = target.lower()
+            
             prediction_label = prediction_label.lower()
-            row = pca_features + [target, prediction_label]
+            row = np.append(pca_features.flatten(), [target_class, prediction])
             writer.writerow(row)
 
         return {"message": "Feedback saved successfully"}

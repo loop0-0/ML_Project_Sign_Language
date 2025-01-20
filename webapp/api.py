@@ -6,6 +6,10 @@ import io
 # Define development API URLs
 PREDICTION_API_URL_DEV = "http://serving-api:8080/predict"
 FEEDBACK_API_URL_DEV = "http://serving-api:8080/feedback"
+
+
+FEEDBACK_API_URL = "http://localhost:8000/feedback"
+PREDICTION_API_URL = "http://localhost:8000/predict"
 # Streamlit app
 st.title("Sign Language AI Interpreter")
 
@@ -55,10 +59,10 @@ with tab2:
     feedback_image = st.file_uploader("Upload an image for feedback", type=["png", "jpg", "jpeg"], key="feedback")
 
     # Input for true label
-    true_label = st.text_input("Enter the correct label (a-z, 'nothing', or 'stop'):")
+    true_label = st.text_input("Enter the correct label (a-z, 'nothing', 'space' or 'del'):")
 
     # List of valid labels
-    valid_labels = [chr(i) for i in range(ord('a'), ord('z') + 1)] + ["nothing", "stop"]
+    valid_labels = [chr(i) for i in range(ord('a'), ord('z') + 1)] + ["nothing", "space", "del"]
 
     if feedback_image:
         # Display uploaded image
