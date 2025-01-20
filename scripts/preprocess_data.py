@@ -12,8 +12,8 @@ import os
 import numpy as np
 import cv2
 import pickle
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications.resnet import preprocess_input
+from keras._tf_keras.keras.applications import ResNet50
+from keras._tf_keras.keras.applications.resnet import preprocess_input
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
@@ -96,7 +96,7 @@ def extract_features(base_model, image_array, scaler, pca):
 # -------------------------------------------------------------------
 # 5) Fonction principale pour transformer une image brute en vecteur
 # -------------------------------------------------------------------
-def transform_single_image(image_path, base_model, scaler, pca, target_size=(64, 64)):
+def transform_single_image(image, base_model, scaler, pca, target_size=(64, 64)):
     """
     Prend le chemin d'une image, charge l'image, applique toutes les étapes
     de prétraitement et renvoie le vecteur final (1, n_components_pca) prêt
@@ -112,13 +112,13 @@ def transform_single_image(image_path, base_model, scaler, pca, target_size=(64,
     Retourne :
         features_vector : np.array, shape (1, n_components_pca)
     """
-    # Charger l'image en BGR avec OpenCV
-    image_bgr = cv2.imread(image_path)
-    if image_bgr is None:
-        raise ValueError(f"Impossible de charger l'image : {image_path}")
+    # # Charger l'image en BGR avec OpenCV
+    # image_bgr = cv2.imread(image_path)
+    # if image_bgr is None:
+    #     raise ValueError(f"Impossible de charger l'image : {image_path}")
 
     # Prétraiter l'image (BGR -> RGB, resize, preprocess_input, etc.)
-    image_preprocessed = preprocess_image_bgr(image_bgr, target_size=target_size)
+    image_preprocessed = preprocess_image_bgr(image, target_size=target_size)
 
     # Extraire les features (ResNet50 + scaling + PCA)
     features_vector = extract_features(base_model, image_preprocessed, scaler, pca)

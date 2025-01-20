@@ -5,15 +5,59 @@ import pickle
 import cv2
 import csv
 import os
+import sys
+
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+# Get the directory of the current script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct absolute paths for artifacts
+scaler_path = os.path.join(current_dir, "../artifacts/scaler.pkl")
+pca_path = os.path.join(current_dir, "../artifacts/pca.pkl")
+model_path = os.path.join(current_dir, "../artifacts/model_xgb.pkl")
+
 
 from keras._tf_keras.keras.applications.resnet import preprocess_input
 from keras._tf_keras.keras.applications.resnet50 import ResNet50
 
+from scripts.preprocess_data import transform_single_image
 
 
-classes = ['W', 'K', 'B', 'M', 'R', 'I', 'G', 'P', 'O', 'Z', 'U', 'A', 
-           'nothing', 'V', 'del', 'Y', 'L', 'X', 'space', 'F', 'J', 
-           'C', 'H', 'Q', 'T', 'D', 'E', 'S', 'N']
+
+classes = [
+    'A',        # 0
+    'B',        # 1
+    'C',        # 2
+    'D',        # 3
+    'E',        # 4
+    'F',        # 5
+    'G',        # 6
+    'H',        # 7
+    'I',        # 8
+    'J',        # 9
+    'K',        # 10
+    'L',        # 11
+    'M',        # 12
+    'N',        # 13
+    'O',        # 14
+    'P',        # 15
+    'Q',        # 16
+    'R',        # 17
+    'S',        # 18
+    'T',        # 19
+    'U',        # 20
+    'V',        # 21
+    'W',        # 22
+    'X',        # 23
+    'Y',        # 24
+    'Z',        # 25
+    'del',      # 26
+    'nothing',  # 27
+    'space'     # 28
+]
 
 # Create a mapping dictionary with indices starting from 1
 index_to_label = {i + 1: label for i, label in enumerate(classes)}
@@ -24,20 +68,20 @@ index_to_label = {i + 1: label for i, label in enumerate(classes)}
 app = FastAPI()
 
 # Load pre-trained ResNet50 for feature extraction
-resnet_model = ResNet50(weights="imagenet", include_top=False, pooling="avg")
+base_model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
 
 
 # Path for production data CSV
 # PROD_DATA_PATH = "../data/prod_data.csv"
 
 # Load the scaler, PCA, and ML model
-with open("../artifacts/scaler.pkl", "rb") as scaler_file:
+with open(scaler_path, "rb") as scaler_file:
     scaler = pickle.load(scaler_file)
 
-with open("../artifacts/pca.pkl", "rb") as pca_file:
+with open(pca_path, "rb") as pca_file:
     pca = pickle.load(pca_file)
 
-with open("../artifacts/model_xgb.pkl", "rb") as model_file:
+with open(model_path, "rb") as model_file:
     model = pickle.load(model_file)
 
 @app.post("/predict")
@@ -52,19 +96,15 @@ async def predict(image: UploadFile = File(...)):
         np_image = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
 
-        # Preprocess the image for ResNet50
-        img_resized = cv2.resize(img, (224, 224))  # ResNet50 expects 224x224 images
-        img_array = np.expand_dims(img_resized, axis=0)
-        img_preprocessed = preprocess_input(img_array)  # Preprocessing for ResNet50
 
-        # Extract features using ResNet50
-        features = resnet_model.predict(img_preprocessed)
+        features_pca = transform_single_image(
+            image=img,
+            base_model=base_model,
+            scaler=scaler,
+            pca=pca,
+            target_size=(64, 64)
+        )
 
-        # Apply scaler and PCA to the features
-        features_scaled = scaler.transform(features)
-        features_pca = pca.transform(features_scaled)
-
-        # Make prediction using the ML model
         prediction = model.predict(features_pca)
       
         prediction = prediction.tolist()[0]
