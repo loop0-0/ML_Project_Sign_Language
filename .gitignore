@@ -2,3 +2,4 @@ env/
 reporting/reporting/*
 # Ignorer les dossiers __pycache__
 __pycache__/
+scripts/test.py
