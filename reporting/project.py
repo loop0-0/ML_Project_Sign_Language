@@ -7,8 +7,8 @@ from evidently.metric_preset import DataDriftPreset, ClassificationPreset
 # for locel  use :
 #REF_DATA_PATH = "./data/ref_data.csv"
 #PROD_DATA_PATH = "./data/prod_data.csv"
-REF_DATA_PATH = "./data/ref_data.csv"
-PROD_DATA_PATH = "./data/prod_data.csv"
+REF_DATA_PATH = "../data/ref_data.csv"
+PROD_DATA_PATH = "../data/prod_data.csv"
 
 
 def debug_label_types(df: pd.DataFrame, name: str):
