@@ -1,5 +1,4 @@
-# reporting/requirements.txt
 pandas
-numpy
 scikit-learn
-# DO NOT PIN evidently here, we install it from GitHub below
+evidently==0.3.2
+numpy<2.0
