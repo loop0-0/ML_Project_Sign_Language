@@ -8,3 +8,4 @@ services:
     volumes:
       - ../data:/data
       - ./reporting/evidently_ui_workspace:/app/reporting/evidently_ui_workspace
+      - ../artifacts:/artifacts
